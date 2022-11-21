@@ -2,6 +2,10 @@
     "name": "cyclops",
     "version": "0.1.0",
     "private": true,
+    "description": "Cyclops is a simple, straightforward and 100% FOSS Chrome extension for adding HTTP request headers",
+    "repository": {
+        "url": "https://github.com/nixtus/cyclops"
+    },
     "dependencies": {
         "@craco/craco": "^7.0.0",
         "@testing-library/jest-dom": "^5.16.5",
