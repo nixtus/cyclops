@@ -13,9 +13,13 @@ interface Profile {
     requestHeaders: ProfileRequestHeader[];
 }
 
-interface GlobalSettings {}
+interface GlobalSettings {
+    enabled: boolean;
+    selectedProfile: Profile;
+    profiles: Profile[];
+}
 
-const CURRENT_PROFILE_KEY = 'currentProfile';
+const CYCLOPS_SETTINGS_STORAGE_KEY = 'CYCLOPS_SETTINGS';
 
 function getRandomId() {
     return Math.floor(Math.random() * 1000);
@@ -32,49 +36,56 @@ function App() {
 
     useEffect(() => {
         const getProfileFromStorage = async () => {
-            const profile = await chrome.storage.local.get(CURRENT_PROFILE_KEY);
-            if (profile?.currentProfile) {
-                console.log('GOT PROFILE from storage', profile);
+            const settingsResponse = await chrome.storage.local.get(CYCLOPS_SETTINGS_STORAGE_KEY);
 
-                setSelectedProfile(profile.currentProfile);
+            const settings = settingsResponse[CYCLOPS_SETTINGS_STORAGE_KEY] as GlobalSettings;
+            console.log('settings', settings);
+
+            setGlobalEnabled(settings.enabled);
+
+            if (settings?.selectedProfile) {
+                setSelectedProfile(settings.selectedProfile);
             }
         };
         getProfileFromStorage();
     }, []);
 
-    console.log('selected profile', selectedProfile);
+    console.log('selected profile', selectedProfile, globalEnabled);
 
-    const updateRequestRules = async () => {
+    const updateRequestRules = async (enabled?: boolean) => {
         // remove rules are run first, so take the easy way out and remove the profile and re-add all the active headers
         await chrome.declarativeNetRequest.updateSessionRules({
             removeRuleIds: [selectedProfile.id]
         });
 
-        // logic for using a single rule which maps to a profile and therefore all the headers underneath it
-        await chrome.declarativeNetRequest.updateSessionRules({
-            addRules: [
-                {
-                    id: selectedProfile.id,
-                    action: {
-                        type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-                        requestHeaders: selectedProfile.requestHeaders.reduce((accumulator, header) => {
-                            if (header.enabled) {
-                                accumulator.push({
-                                    header: header.name,
-                                    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                                    value: header.value
-                                });
-                            }
+        // check we are enabled globally
+        if (enabled !== undefined && enabled) {
+            // logic for using a single rule which maps to a profile and therefore all the headers underneath it
+            await chrome.declarativeNetRequest.updateSessionRules({
+                addRules: [
+                    {
+                        id: selectedProfile.id,
+                        action: {
+                            type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                            requestHeaders: selectedProfile.requestHeaders.reduce((accumulator, header) => {
+                                if (header.enabled) {
+                                    accumulator.push({
+                                        header: header.name,
+                                        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                                        value: header.value
+                                    });
+                                }
 
-                            return accumulator;
-                        }, [] as any)
-                    },
-                    condition: {
-                        resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+                                return accumulator;
+                            }, [] as any)
+                        },
+                        condition: {
+                            resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+                        }
                     }
-                }
-            ]
-        });
+                ]
+            });
+        }
 
         // logic for setting every request header as its own rule
         // await chrome.declarativeNetRequest.updateSessionRules({
@@ -99,14 +110,20 @@ function App() {
         // });
     };
 
-    const saveSelectedProfileToStorage = async () => {
-        if (selectedProfile) {
-            await chrome.storage.local.set({ [CURRENT_PROFILE_KEY]: selectedProfile });
-        }
+    const saveSettingsToStorage = async (enabled?: boolean) => {
+        await chrome.storage.local.set({
+            [CYCLOPS_SETTINGS_STORAGE_KEY]: {
+                enabled: enabled !== undefined ? enabled : globalEnabled,
+                selectedProfile
+            }
+        });
     };
 
     const globalEnableClick = () => {
-        setGlobalEnabled(!globalEnabled);
+        const current = !globalEnabled;
+        setGlobalEnabled(current);
+        saveSettingsToStorage(current);
+        updateRequestRules(current);
     };
 
     const handleChange = (id: number, event: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +136,7 @@ function App() {
                 requestHeaders: [...(selectedProfile?.requestHeaders || []).filter((x) => x.id !== id), current]
             } as any);
 
-            saveSelectedProfileToStorage();
+            saveSettingsToStorage();
             updateRequestRules();
         }
     };
@@ -134,7 +151,7 @@ function App() {
                 requestHeaders: [...(selectedProfile?.requestHeaders || []).filter((x) => x.id !== id), current]
             } as any);
 
-            saveSelectedProfileToStorage();
+            saveSettingsToStorage();
             updateRequestRules();
         }
     };
@@ -142,7 +159,7 @@ function App() {
     const addHeaderClick = () => {
         const headers = [
             ...(selectedProfile?.requestHeaders || []),
-            { id: Math.floor(Math.random() * 1000), name: '', value: '', enabled: true }
+            { id: getRandomId(), name: '', value: '', enabled: true }
         ];
         setSelectedProfile({ ...selectedProfile, requestHeaders: headers } as any);
     };
@@ -153,7 +170,7 @@ function App() {
             requestHeaders: selectedProfile?.requestHeaders.filter((x) => x.id !== id)
         } as any);
 
-        saveSelectedProfileToStorage();
+        saveSettingsToStorage();
         updateRequestRules();
     };
 
