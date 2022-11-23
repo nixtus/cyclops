@@ -6,6 +6,11 @@
     "repository": {
         "url": "https://github.com/nixtus/cyclops"
     },
+    "scripts": {
+        "watch": "npm-watch",
+        "build": "INLINE_RUNTIME_CHUNK=false craco build",
+        "test": "react-scripts test"
+    },
     "dependencies": {
         "@craco/craco": "^7.0.0",
         "@testing-library/jest-dom": "^5.16.5",
@@ -27,13 +32,6 @@
             ],
             "extensions": "ts,tsx"
         }
-    },
-    "scripts": {
-        "watch": "npm-watch",
-        "start": "react-scripts start",
-        "build": "INLINE_RUNTIME_CHUNK=false craco build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject"
     },
     "eslintConfig": {
         "extends": [

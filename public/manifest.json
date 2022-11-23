@@ -12,7 +12,8 @@
         "48": "logo192.png",
         "128": "logo192.png"
     },
-    "permissions": ["activeTab", "storage", "webRequest", "*://*.google.com/"],
+    "host_permissions": ["<all_urls>"],
+    "permissions": ["activeTab", "storage", "declarativeNetRequest"],
     "content_scripts": [
         {
             "matches": ["http://*/*", "https://*/*"],
