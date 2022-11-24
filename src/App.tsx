@@ -66,30 +66,36 @@ function App() {
         // check we are enabled globally
         if (enabled !== undefined && enabled) {
             // logic for using a single rule which maps to a profile and therefore all the headers underneath it
-            await chrome.declarativeNetRequest.updateSessionRules({
-                addRules: [
-                    {
-                        id: selectedProfile.id,
-                        action: {
-                            type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
-                            requestHeaders: selectedProfile.requestHeaders.reduce((accumulator, header) => {
-                                if (header.enabled && header.name && header.value) {
-                                    accumulator.push({
-                                        header: header.name,
-                                        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
-                                        value: header.value
-                                    });
-                                }
+            const filteredHeaders = selectedProfile.requestHeaders.reduce((accumulator, header) => {
+                if (header.enabled && header.name && header.value) {
+                    console.log('adding header', header);
 
-                                return accumulator;
-                            }, [] as any)
-                        },
-                        condition: {
-                            resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+                    accumulator.push({
+                        header: header.name,
+                        operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                        value: header.value
+                    });
+                }
+
+                return accumulator;
+            }, [] as any);
+
+            if (filteredHeaders?.length) {
+                await chrome.declarativeNetRequest.updateSessionRules({
+                    addRules: [
+                        {
+                            id: selectedProfile.id,
+                            action: {
+                                type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                                requestHeaders: filteredHeaders
+                            },
+                            condition: {
+                                resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+                            }
                         }
-                    }
-                ]
-            });
+                    ]
+                });
+            }
         }
 
         // logic for setting every request header as its own rule
