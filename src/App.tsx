@@ -41,10 +41,15 @@ function App() {
             const settings = settingsResponse[CYCLOPS_SETTINGS_STORAGE_KEY] as GlobalSettings;
             console.log('settings', settings);
 
-            setGlobalEnabled(settings.enabled);
+            if (settings) {
+                setGlobalEnabled(settings.enabled);
 
-            if (settings?.selectedProfile) {
-                setSelectedProfile(settings.selectedProfile);
+                if (settings?.selectedProfile) {
+                    setSelectedProfile(settings.selectedProfile);
+                }
+
+                // ensure rules are updated from whats in storage
+                updateRequestRules(settings.enabled);
             }
         };
         getProfileFromStorage();
@@ -52,7 +57,7 @@ function App() {
 
     console.log('selected profile', selectedProfile, globalEnabled);
 
-    const updateRequestRules = async (enabled?: boolean) => {
+    const updateRequestRules = async (enabled: boolean) => {
         // remove rules are run first, so take the easy way out and remove the profile and re-add all the active headers
         await chrome.declarativeNetRequest.updateSessionRules({
             removeRuleIds: [selectedProfile.id]
@@ -68,7 +73,7 @@ function App() {
                         action: {
                             type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
                             requestHeaders: selectedProfile.requestHeaders.reduce((accumulator, header) => {
-                                if (header.enabled) {
+                                if (header.enabled && header.name && header.value) {
                                     accumulator.push({
                                         header: header.name,
                                         operation: chrome.declarativeNetRequest.HeaderOperation.SET,
@@ -114,7 +119,11 @@ function App() {
         await chrome.storage.local.set({
             [CYCLOPS_SETTINGS_STORAGE_KEY]: {
                 enabled: enabled !== undefined ? enabled : globalEnabled,
-                selectedProfile
+                selectedProfile: {
+                    ...selectedProfile,
+                    // don't save any headers that don't have a name and value
+                    requestHeaders: selectedProfile.requestHeaders.filter((x) => x.name && x.value)
+                }
             }
         });
     };
@@ -137,7 +146,7 @@ function App() {
             } as any);
 
             saveSettingsToStorage();
-            updateRequestRules();
+            updateRequestRules(globalEnabled);
         }
     };
 
@@ -152,7 +161,7 @@ function App() {
             } as any);
 
             saveSettingsToStorage();
-            updateRequestRules();
+            updateRequestRules(globalEnabled);
         }
     };
 
@@ -171,7 +180,7 @@ function App() {
         } as any);
 
         saveSettingsToStorage();
-        updateRequestRules();
+        updateRequestRules(globalEnabled);
     };
 
     return (
@@ -179,18 +188,21 @@ function App() {
             <nav className="relative w-full flex flex-wrap items-center justify-between py-3 bg-gray-100 text-gray-500 hover:text-gray-700 focus:text-gray-700 shadow-lg">
                 <div className="container-fluid w-full flex flex-wrap items-center justify-between px-6">
                     <div className="container-fluid">
-                        <a className="text-xl text-black" href="#">
-                            Navbar
-                        </a>
+                        <a className="text-xl text-black">Cyclops</a>
                     </div>
                     <ul className="navbar-nav flex flex-col pl-0 list-style-none mr-auto">
                         <li className="nav-item px-2">
-                            <button onClick={globalEnableClick}>{globalEnabled ? 'Stop' : 'Start'}</button>
+                            <button
+                                className="inline-block px-4 py-1.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
+                                onClick={globalEnableClick}
+                            >
+                                {globalEnabled ? 'Stop' : 'Start'}
+                            </button>
                         </li>
                     </ul>
                 </div>
             </nav>
-            <div className="flex flex-col">
+            <div className={`flex flex-col ${!globalEnabled ? 'bg-gray-200' : ''}`}>
                 <div className="overflow-x-auto sm:-mx-6 lg:-mx-8">
                     <div className="py-2 inline-block min-w-full sm:px-6 lg:px-8">
                         <div className="overflow-x-auto">
@@ -198,6 +210,7 @@ function App() {
                                 type="button"
                                 className="inline-block px-4 py-1.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
                                 onClick={addHeaderClick}
+                                disabled={!globalEnabled}
                             >
                                 Add Header
                             </button>
@@ -239,6 +252,7 @@ function App() {
                                                         id={`${reqHeader.id.toString()}enabled`}
                                                         checked={reqHeader.enabled}
                                                         onChange={() => handleCheckboxChange(reqHeader.id)}
+                                                        disabled={!globalEnabled}
                                                     />
                                                 </td>
                                                 <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
@@ -249,6 +263,7 @@ function App() {
                                                         id={`${reqHeader.id.toString()}name`}
                                                         value={reqHeader.name}
                                                         onChange={(e) => handleChange(reqHeader.id, e)}
+                                                        disabled={!globalEnabled}
                                                     />
                                                 </td>
                                                 <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
@@ -259,6 +274,7 @@ function App() {
                                                         id={`${reqHeader.id.toString()}value`}
                                                         value={reqHeader.value}
                                                         onChange={(e) => handleChange(reqHeader.id, e)}
+                                                        disabled={!globalEnabled}
                                                     />
                                                 </td>
                                                 <td className="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
@@ -266,6 +282,7 @@ function App() {
                                                         type="button"
                                                         className="inline-block px-4 py-1.5 bg-blue-600 text-white font-medium text-xs leading-tight uppercase rounded shadow-md hover:bg-blue-700 hover:shadow-lg focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0 active:bg-blue-800 active:shadow-lg transition duration-150 ease-in-out"
                                                         onClick={() => deleteHeaderClick(reqHeader.id)}
+                                                        disabled={!globalEnabled}
                                                     >
                                                         Delete
                                                     </button>
