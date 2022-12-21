@@ -13,11 +13,5 @@
         "128": "logo192.png"
     },
     "host_permissions": ["<all_urls>"],
-    "permissions": ["activeTab", "storage", "declarativeNetRequest"],
-    "content_scripts": [
-        {
-            "matches": ["http://*/*", "https://*/*"],
-            "js": ["./static/js/content.js"]
-        }
-    ]
+    "permissions": ["activeTab", "storage", "declarativeNetRequest"]
 }
