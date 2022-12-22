@@ -106,7 +106,7 @@ export function Header() {
                                     })
                                     .map((profile, idx) => {
                                         return (
-                                            <div className="flex flex-wrap items-center">
+                                            <div key={idx} className="flex flex-wrap items-center">
                                                 <Checkbox
                                                     name="enabled"
                                                     id={`${idx}enabled`}
@@ -114,7 +114,7 @@ export function Header() {
                                                     onChange={() => handleProfileEnableChange(profile.id)}
                                                     disabled={!globalEnabled}
                                                 />
-                                                <Dropdown.Item key={idx} onClick={() => handleSetProfile(profile.id)}>
+                                                <Dropdown.Item onClick={() => handleSetProfile(profile.id)}>
                                                     {profile.name}
                                                 </Dropdown.Item>
                                             </div>
