@@ -1,6 +1,7 @@
-import { Button, Checkbox, Dropdown } from 'flowbite-react';
+import { Button, Checkbox, Dropdown, Navbar } from 'flowbite-react';
 import React, { useContext } from 'react';
-import { ActionType, GlobalContext } from '../context/Global';
+import { GlobalContext } from '../context/Global';
+import { ActionType } from '../context/Global/actions';
 
 export function Header() {
     const { state: globalState, dispatch } = useContext(GlobalContext);
@@ -33,11 +34,25 @@ export function Header() {
         });
     };
 
+    const duplicateProfileClick = () => {
+        dispatch({
+            type: ActionType.DUPLICATE_CURRENT_PROFILE
+        });
+    };
+
+    const deleteProfileClick = () => {
+        dispatch({
+            type: ActionType.DELETE_CURRENT_PROFILE
+        });
+    };
     return (
         <nav className="relative w-full flex flex-wrap items-center justify-between py-3 bg-gray-100 text-gray-500 hover:text-gray-700 focus:text-gray-700 shadow-lg">
             <div className="container-fluid w-full flex flex-wrap items-center justify-between px-6">
                 <div className="container-fluid">
-                    <span className="self-center whitespace-nowrap text-xl text-black">Cyclops</span>
+                    <Navbar.Brand>
+                        <img src="logo192.png" className="mr-3 h-6 sm:h-9" alt="Cyclops Logo" />
+                        <span className="self-center whitespace-nowrap text-xl text-black">Cyclops</span>
+                    </Navbar.Brand>
                 </div>
                 <ul className="navbar-nav flex pl-0 list-style-none mr-auto">
                     <li className="nav-item px-2">
@@ -46,9 +61,32 @@ export function Header() {
                         </Button>
                     </li>
                     <li className="nav-item px-2">
-                        <Button size="xs" onClick={handleAddProfile}>
-                            Add Profile
-                        </Button>
+                        <Button.Group>
+                            <Button
+                                size="xs"
+                                disabled={!globalEnabled}
+                                gradientMonochrome="info"
+                                onClick={handleAddProfile}
+                            >
+                                Add Profile
+                            </Button>
+                            <Button
+                                size="xs"
+                                onClick={duplicateProfileClick}
+                                disabled={!globalEnabled}
+                                gradientMonochrome="info"
+                            >
+                                Duplicate Profile
+                            </Button>
+                            <Button
+                                size="xs"
+                                onClick={deleteProfileClick}
+                                disabled={!globalEnabled}
+                                gradientMonochrome="info"
+                            >
+                                Delete Profile
+                            </Button>
+                        </Button.Group>
                     </li>
                     {profiles?.length ? (
                         <li className="nav-item px-2">

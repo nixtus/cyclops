@@ -1,7 +1,8 @@
 import { Button, Checkbox, TextInput } from 'flowbite-react';
 import React, { useContext, useEffect } from 'react';
 import { Header } from './components/Header';
-import { ActionType, GlobalContext } from './context/Global';
+import { GlobalContext } from './context/Global';
+import { ActionType } from './context/Global/actions';
 import { GlobalSettings } from './types';
 import { CYCLOPS_SETTINGS_STORAGE_KEY } from './utils';
 
@@ -96,10 +97,17 @@ function App() {
                                 onChange={handleProfileNameChange}
                                 disabled={!globalEnabled}
                                 placeholder="Profile Name..."
+                                sizing="sm"
                             />
-                            <Button size="xs" onClick={addHeaderClick} disabled={!globalEnabled}>
+                            <Button
+                                size="xs"
+                                onClick={addHeaderClick}
+                                disabled={!globalEnabled}
+                                gradientMonochrome="info"
+                            >
                                 Add Header
                             </Button>
+
                             <table className="min-w-full text-center">
                                 <thead className="border-b">
                                     <tr>
