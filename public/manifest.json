@@ -13,5 +13,5 @@
         "128": "logo192.png"
     },
     "host_permissions": ["<all_urls>"],
-    "permissions": ["activeTab", "storage", "declarativeNetRequest"]
+    "permissions": ["activeTab", "storage", "declarativeNetRequest", "downloads"]
 }
