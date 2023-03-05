@@ -23,6 +23,33 @@ const profileSchema = z.object({
 
 const profileArraySchema = z.array(profileSchema);
 
+const modHeaderProfileSchema = z.object({
+    headers: z.array(
+        z.object({
+            enabled: z.boolean(),
+            name: z.string(),
+            value: z.string()
+        })
+    ),
+    shortTitle: z.string(),
+    title: z.string(),
+    version: z.number(),
+    urlFilters: z.optional(
+        z.array(
+            z.object({
+                enabled: z.boolean(),
+                urlRegex: z.string()
+            })
+        )
+    )
+});
+
+const modHeaderProfileArrayShema = z.array(modHeaderProfileSchema);
+
 export function parseImportSettings(profiles: unknown) {
     return profileArraySchema.safeParse(profiles);
+}
+
+export function parseModHeaderProfiles(profiles: unknown) {
+    return modHeaderProfileArrayShema.safeParse(profiles);
 }

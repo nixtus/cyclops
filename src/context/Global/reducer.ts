@@ -30,6 +30,11 @@ export const reducer = (state: GlobalSettings, action: Action) => {
                 ...state,
                 profiles: action.payload
             };
+        case ActionType.APPEND_TO_PROFILES:
+            return {
+                ...state,
+                profiles: [...state.profiles, ...action.payload]
+            };
         case ActionType.UPDATE_PROFILE_ENABLE: {
             const profile = state.profiles.find((x) => x.id === action.payload);
 

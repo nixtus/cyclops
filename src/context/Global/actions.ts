@@ -9,7 +9,8 @@ export enum ActionType {
     CREATE_NEW_PROFILE = 'create_new_profile',
     UPDATE_PROFILE_ENABLE = 'update_profile_enable',
     DUPLICATE_CURRENT_PROFILE = 'duplicate_current_profile',
-    DELETE_CURRENT_PROFILE = 'delete_current_profile'
+    DELETE_CURRENT_PROFILE = 'delete_current_profile',
+    APPEND_TO_PROFILES = 'APPEND_TO_PROFILES'
 }
 
 export type Action = {

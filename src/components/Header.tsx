@@ -1,15 +1,19 @@
-import { Textarea, Button, Checkbox, Dropdown, Navbar, Modal, Alert } from 'flowbite-react';
+import { Textarea, Button, Checkbox, Dropdown, Navbar, Modal, Alert, Badge } from 'flowbite-react';
 import React, { useContext, useState } from 'react';
 import { GlobalContext } from '../context/Global';
 import { ActionType } from '../context/Global/actions';
-import { parseImportSettings } from '../utils';
+import { Profile } from '../types';
+import { getRandomId, parseImportSettings, parseModHeaderProfiles } from '../utils';
 
 export function Header() {
     const { state: globalState, dispatch } = useContext(GlobalContext);
     const { enabled: globalEnabled, profiles } = globalState || {};
-    const [showModal, setShowModal] = useState(false);
+    const [showCyclopsModal, setShowCyclopsModal] = useState(false);
+    const [showModHeaderModal, setShowModHeaderModal] = useState(false);
     const [profileData, setProfileData] = useState<any>();
+    const [modHeaderProfileData, setModHeaderProfileData] = useState<any>();
     const [showError, setShowError] = useState(false);
+    const [showModHeaderError, setShowModHeaderError] = useState(false);
 
     const handleGlobalEnable = () => {
         dispatch({
@@ -60,7 +64,7 @@ export function Header() {
         });
     };
 
-    const importProfiles = () => {
+    const importCyclopsProfiles = () => {
         try {
             const data = JSON.parse(profileData);
             const result = parseImportSettings(data);
@@ -96,7 +100,7 @@ export function Header() {
                 });
 
                 setShowError(false);
-                setShowModal(false);
+                setShowCyclopsModal(false);
             } else {
                 setShowError(true);
             }
@@ -105,10 +109,52 @@ export function Header() {
         }
     };
 
-    const toggleModal = () => {
-        setShowModal(!showModal);
+    const importModHeaderProfiles = () => {
+        try {
+            const data = JSON.parse(modHeaderProfileData);
+            const result = parseModHeaderProfiles(data);
+
+            if (result.success) {
+                const newProfiles: Profile[] = [];
+
+                for (const profile of result.data) {
+                    newProfiles.push({
+                        id: getRandomId(),
+                        name: profile.title,
+                        currentlySelected: false,
+                        enabled: false,
+                        requestHeaders:
+                            profile.headers?.map((x) => ({
+                                enabled: x.enabled,
+                                name: x.name,
+                                id: getRandomId(),
+                                value: x.value
+                            })) ?? []
+                    });
+                }
+
+                dispatch({
+                    type: ActionType.APPEND_TO_PROFILES,
+                    payload: newProfiles
+                });
+
+                setShowModHeaderError(false);
+                setShowModHeaderModal(false);
+            } else {
+                setShowModHeaderError(true);
+            }
+        } catch (error) {
+            setShowModHeaderError(true);
+        }
     };
 
+    const toggleCyclopsImportModal = () => {
+        setShowCyclopsModal(!showCyclopsModal);
+    };
+
+    const toggleModHeaderImportModal = () => {
+        setShowModHeaderModal(!showModHeaderModal);
+    };
     return (
         <nav className="relative w-full flex flex-wrap items-center justify-between py-3 bg-gray-100 text-gray-500 hover:text-gray-700 focus:text-gray-700 shadow-lg">
             <div className="container-fluid w-full flex flex-wrap items-center justify-between px-6">
@@ -127,7 +173,7 @@ export function Header() {
                     <li className="nav-item px-2">
                         <Button.Group>
                             {profiles?.length ? (
-                                <Dropdown label="Profiles" size="xs" gradientMonochrome="info">
+                                <Dropdown label={`Profiles (${profiles?.length})`} size="xs" gradientMonochrome="info">
                                     {profiles
                                         .sort((a, b) => {
                                             const nameA = a.name.toUpperCase();
@@ -195,13 +241,17 @@ export function Header() {
                             >
                                 Export
                             </Button>
-                            <Button size="xs" onClick={toggleModal} disabled={!globalEnabled} gradientMonochrome="info">
+                            {/* <Button size="xs" onClick={toggleModal} disabled={!globalEnabled} gradientMonochrome="info">
                                 Import
-                            </Button>
+                            </Button> */}
+                            <Dropdown label="Import" size="xs" gradientMonochrome="info">
+                                <Dropdown.Item onClick={toggleCyclopsImportModal}>Cyclops Profiles</Dropdown.Item>
+                                <Dropdown.Item onClick={toggleModHeaderImportModal}>ModHeader</Dropdown.Item>
+                            </Dropdown>
                         </Button.Group>
                     </li>
                 </ul>
-                <Modal show={showModal} onClose={toggleModal}>
+                <Modal show={showCyclopsModal} onClose={toggleCyclopsImportModal}>
                     <Modal.Header>Import Profiles</Modal.Header>
                     {showError ? (
                         <Alert color="failure" onDismiss={() => setShowError(false)}>
@@ -224,7 +274,32 @@ export function Header() {
                         </div>
                     </Modal.Body>
                     <Modal.Footer>
-                        <Button onClick={importProfiles}>Import</Button>
+                        <Button onClick={importCyclopsProfiles}>Import</Button>
+                    </Modal.Footer>
+                </Modal>
+                <Modal show={showModHeaderModal} onClose={toggleModHeaderImportModal}>
+                    <Modal.Header>Import ModHeader Profiles</Modal.Header>
+                    {showModHeaderError ? (
+                        <Alert color="failure" onDismiss={() => setShowError(false)}>
+                            <span>
+                                <span className="font-medium">Invalid Input</span>
+                                The profile information you entered is not in the correct format
+                            </span>
+                        </Alert>
+                    ) : null}
+                    <Modal.Body>
+                        <div className="space-y-6">
+                            <Textarea
+                                value={modHeaderProfileData}
+                                onChange={(e) => setModHeaderProfileData(e.target.value as any)}
+                                placeholder="Paste ModHeader profiles"
+                                required={true}
+                                rows={6}
+                            />
+                        </div>
+                    </Modal.Body>
+                    <Modal.Footer>
+                        <Button onClick={importModHeaderProfiles}>Import</Button>
                     </Modal.Footer>
                 </Modal>
             </div>
