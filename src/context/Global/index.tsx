@@ -80,7 +80,10 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
                                 requestHeaders: x.requestHeaders
                             },
                             condition: {
-                                resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+                                resourceTypes: [
+                                    chrome.declarativeNetRequest.ResourceType.MAIN_FRAME,
+                                    chrome.declarativeNetRequest.ResourceType.XMLHTTPREQUEST
+                                ]
                             }
                         }))
                     });
