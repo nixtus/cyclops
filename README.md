@@ -23,14 +23,14 @@ Currently, this extension isn't published to the chrome web store, so you must b
 5. In your chrome or brave browser navigate to `{chrome/brave}://extensions`
 6. Ensure you have `Developer Mode` enabled
 7. Click `Load unpacked`
-8. Select the `build` folder that was produced in step `4`
+8. Select the `dist` folder that was produced in step `4`
 9. Now, if you click the extensions button, you should see the `Cyclops` extension displayed
 
 ## Development
 
 -   Install deps `npm install`
--   Start watch mode `npm run watch`
+-   Start watch mode `npm run dev`
 -   Go into chrome/brave `brave://extensions`
 -   Click `Load Unpacked`
--   Select the `build` directory that was produced from the watch command
+-   Select the `dist` directory that was produced from the watch command
 -   The extension will now be accessible in the menu bar
