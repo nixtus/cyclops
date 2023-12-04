@@ -2,6 +2,8 @@
 
 Cyclops is a simple, straightforward and 100% FOSS Chrome extension for adding HTTP request headers
 
+![image](https://github.com/nixtus/cyclops/assets/6639967/adc4c224-b49c-4be0-adb9-23f78eca85eb)
+
 ### Why??
 
 You may be thinking that doesn't something like this already exist and the answer is YES it does. There are many extensions out there and I have used most of them, but what ends up happening is they become popular and the authors/companies behind them try to monetize their creations. They put in paywalls limiting functionality and making you pay to get that functionality back. So, if you don't like that, try out Cyclops.
