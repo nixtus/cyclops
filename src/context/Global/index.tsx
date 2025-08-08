@@ -15,7 +15,7 @@ const GlobalContext = React.createContext<{ state: GlobalSettings; dispatch: Dis
 });
 
 function usePrevious(value: any) {
-    const ref = useRef();
+    const ref = useRef<any>(null);
 
     useEffect(() => {
         ref.current = value;
@@ -31,9 +31,7 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
     useEffect(() => {
         const saveSettingsToStorage = async () => {
-            await chrome.storage.local.set({
-                [CYCLOPS_SETTINGS_STORAGE_KEY]: state
-            });
+            await chrome.storage.local.set({ [CYCLOPS_SETTINGS_STORAGE_KEY]: state });
         };
 
         const updateRequestRules = async () => {
@@ -45,9 +43,7 @@ const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
                 ...(previousState?.profiles || []).map((x: any) => x.id)
             ];
             if (profileIdsToRemove?.length) {
-                await chrome.declarativeNetRequest.updateSessionRules({
-                    removeRuleIds: profileIdsToRemove
-                });
+                await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: profileIdsToRemove });
             }
 
             // check we are enabled globally
