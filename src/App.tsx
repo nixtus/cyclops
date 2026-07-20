@@ -136,20 +136,7 @@ function App() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {selectedProfile?.requestHeaders
-                                        ?.sort((a, b) => {
-                                            const nameA = a.name.toUpperCase();
-                                            const nameB = b.name.toUpperCase();
-                                            if (nameA < nameB) {
-                                                return -1;
-                                            }
-                                            if (nameA > nameB) {
-                                                return 1;
-                                            }
-
-                                            return 0;
-                                        })
-                                        .map((reqHeader: any) => {
+                                    {selectedProfile?.requestHeaders?.map((reqHeader: any) => {
                                             return (
                                                 <tr className="border-b" key={reqHeader.id}>
                                                     <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
