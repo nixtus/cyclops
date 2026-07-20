@@ -131,7 +131,6 @@ export const reducer = (state: GlobalSettings, action: Action) => {
         }
         case ActionType.SET_CURRENT_PROFILE_REQUEST_HEADERS: {
             const selectedProfile = state.profiles.find((x) => x.currentlySelected);
-            const currentRequestHeader: any = selectedProfile?.requestHeaders.find((x) => x.id === action.payload.id);
 
             return {
                 ...state,
@@ -139,10 +138,11 @@ export const reducer = (state: GlobalSettings, action: Action) => {
                     ...state.profiles.filter((x) => x.id !== selectedProfile?.id),
                     {
                         ...selectedProfile,
-                        requestHeaders: [
-                            ...(selectedProfile?.requestHeaders || []).filter((x) => x.id !== currentRequestHeader.id),
-                            { ...currentRequestHeader, [action.payload.name]: action.payload.value }
-                        ]
+                        requestHeaders: (selectedProfile?.requestHeaders || []).map((header) =>
+                            header.id === action.payload.id
+                                ? { ...header, [action.payload.name]: action.payload.value }
+                                : header
+                        )
                     }
                 ]
             };
